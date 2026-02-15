@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top Up Diamond - nazzstore</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a5f; --primary-light: #2d4a6f; --secondary: #3b82f6;
+      --white: #ffffff; --gray-50: #f9fafb; --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb; --gray-300: #d1d5db; --gray-400: #9ca3af;
+      --gray-500: #6b7280; --gray-600: #4b5563; --gray-700: #374151;
+      --gray-800: #1f2937; --gray-900: #111827;
+      --success: #10b981; --success-light: #d1fae5;
+      --error: #ef4444; --error-light: #fee2e2;
+      --info: #3b82f6; --info-light: #dbeafe;
+      --warning: #f59e0b; --warning-light: #fef3c7;
+      --shadow: 0 1px 3px rgb(0 0 0 / 0.1); --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1);
+      --radius: 0.5rem; --radius-lg: 1rem;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--gray-50); color: var(--gray-800); line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9375rem; font-weight: 500; border: none; border-radius: var(--radius); cursor: pointer; transition: all 0.3s; text-decoration: none; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: var(--white); box-shadow: var(--shadow); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .btn-lg { padding: 1rem 2rem; width: 100%; font-size: 1rem; }
+
+    .navbar { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--gray-100); padding: 1rem 0; }
+    .navbar-content { display: flex; align-items: center; justify-content: space-between; }
+    .navbar-brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+
+    .card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem; }
+    .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--gray-100); }
+    .card-header h3 { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--gray-800); }
+    .card-body { padding: 1.5rem; }
+    .step-num { width: 24px; height: 24px; background: var(--primary); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: var(--gray-700); }
+    .form-input { width: 100%; padding: 0.75rem 1rem; font-size: 0.9375rem; border: 1px solid var(--gray-300); border-radius: var(--radius); background: var(--white); outline: none; transition: all 0.2s; }
+    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1); }
+    .form-hint { font-size: 0.8125rem; color: var(--gray-400); margin-top: 0.25rem; }
+
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
+    .product-card { background: var(--white); border: 2px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.25rem 1rem; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; }
+    .product-card:hover { border-color: var(--gray-300); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .product-card.selected { border-color: var(--primary); background: linear-gradient(135deg, rgba(30,58,95,0.05), rgba(59,130,246,0.05)); }
+    .product-card.selected::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .product-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: var(--primary); color: var(--white); border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+    .product-diamond { font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.25rem; }
+    .product-name { font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.5rem; }
+    .product-price { font-size: 0.9375rem; font-weight: 600; color: var(--primary); }
+
+    .payment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+    .payment-card { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--white); border: 2px solid var(--gray-200); border-radius: var(--radius); cursor: pointer; transition: all 0.3s; }
+    .payment-card:hover { border-color: var(--gray-300); }
+    .payment-card.selected { border-color: var(--primary); background: rgba(30,58,95,0.03); }
+    .payment-radio { width: 18px; height: 18px; border: 2px solid var(--gray-300); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .payment-card.selected .payment-radio { border-color: var(--primary); }
+    .payment-card.selected .payment-radio::after { content: ''; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; }
+    .payment-name { font-weight: 500; color: var(--gray-800); font-size: 0.875rem; }
+    .payment-number { font-size: 0.75rem; color: var(--gray-500); }
+
+    .summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; }
+    .summary-label { color: var(--gray-500); font-size: 0.875rem; }
+    .summary-value { font-weight: 500; color: var(--gray-900); font-size: 0.875rem; }
+    .summary-total { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .summary-divider { border-top: 1px solid var(--gray-100); margin: 1rem 0; }
+
+    .info-card { background: var(--info-light); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); padding: 1rem; margin-top: 1rem; }
+    .info-card p { font-size: 0.8125rem; color: var(--gray-700); }
+
+    .spinner { width: 20px; height: 20px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state { text-align: center; padding: 2rem; color: var(--gray-500); }
+    .error-state { text-align: center; padding: 2rem; color: var(--error); }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start; }
+    .sidebar { position: sticky; top: 90px; }
+
+    .maintenance-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--gray-100); text-align: center; padding: 2rem; }
+    .maintenance-icon { width: 80px; height: 80px; margin: 0 auto 1.5rem; background: var(--warning-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--warning); }
+
+    .toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 2000; }
+    .toast { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-lg); margin-bottom: 0.5rem; transform: translateX(150%); transition: transform 0.3s; font-size: 0.875rem; min-width: 280px; max-width: 400px; }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--error); }
+
+    .footer { background: var(--gray-900); color: var(--gray-400); padding: 2rem 0; margin-top: 3rem; }
+    .footer-content { text-align: center; font-size: 0.875rem; }
+
+    .debug-info { background: #fef3c7; border: 1px solid #f59e0b; padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem; font-size: 0.75rem; font-family: monospace; }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+    }
+    @media (max-width: 480px) {
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+      .payment-grid { grid-template-columns: 1fr; }
+      .container { padding: 0 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Maintenance -->
+  <div id="maintenancePage" class="maintenance-page" style="display:none;">
+    <div>
+      <div class="maintenance-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h1 style="font-size:1.5rem;margin-bottom:0.5rem;color:var(--gray-900);">Sedang Maintenance</h1>
+      <p style="color:var(--gray-500);">Silakan kembali beberapa saat lagi.</p>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="mainContent">
+    <nav class="navbar">
+      <div class="container navbar-content">
+        <a href="index.html" class="navbar-brand">💎 nazzstore</a>
+        <a href="index.html" class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.875rem;">Beranda</a>
+      </div>
+    </nav>
+
+    <section style="padding: 2rem 0; min-height: calc(100vh - 150px);">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h1 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--gray-900);">Top Up Diamond Free Fire</h1>
+          <p style="color: var(--gray-500);">Pilih nominal, isi data, dan bayar</p>
+        </div>
+
+        <!-- Debug Info - Hapus di production -->
+        <div class="debug-info" id="debugInfo" style="display:none;">
+          <strong>Debug Info:</strong>
+          <div id="debugContent"></div>
+        </div>
+
+        <div class="main-grid">
+          <div>
+            <!-- Products -->
+            <div class="card">
+              <div class="card-header">
+                <h3><span class="step-num">1</span> Pilih Nominal Diamond</h3>
+              </div>
+              <div class="card-body">
+                <div id="productsContainer">
+                  <div class="empty-state">
+                    <div class="spinner" style="width: 32px; height: 32px; color: var(--primary);"></div>
+                    <p style="margin-top: 1rem;">Memuat produk...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- User Data -->
+            <div class="card">
+              <div class="card-header">
+                <h3><span class="step-num">2</span> Data Akun</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">ID Free Fire</label>
+                  <input type="text" id="ffId" class="form-input" placeholder="Masukkan ID (8-10 digit)" maxlength="10">
+                  <p class="form-hint">Contoh: 123456789</p>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Nomor WhatsApp</label>
+                  <input type="tel" id="whatsapp" class="form-input" placeholder="08xxxxxxxxxx">
+                  <p class="form-hint">Untuk konfirmasi pesanan</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="card">
+              <div class="card-header">
+                <h3><span class="step-num">3</span> Metode Pembayaran</h3>
+              </div>
+              <div class="card-body">
+                <div id="paymentsContainer">
+                  <div class="empty-state">
+                    <div class="spinner" style="width: 32px; height: 32px; color: var(--primary);"></div>
+                    <p style="margin-top: 1rem;">Memuat metode pembayaran...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="sidebar">
+            <div class="card">
+              <div class="card-header">
+                <h3>Ringkasan Pesanan</h3>
+              </div>
+              <div class="card-body">
+                <div id="emptyOrder" class="empty-state" style="padding: 1rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  <p style="margin-top: 0.75rem; font-size: 0.875rem;">Pilih produk terlebih dahulu</p>
+                </div>
+                <div id="orderSummary" style="display: none;">
+                  <div class="summary-row">
+                    <span class="summary-label">Produk</span>
+                    <span class="summary-value" id="sumProduct">-</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Diamond</span>
+                    <span class="summary-value" id="sumDiamond">-</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Pembayaran</span>
+                    <span class="summary-value" id="sumPayment">-</span>
+                  </div>
+                  <div class="summary-divider"></div>
+                  <div class="summary-row">
+                    <span class="summary-label" style="font-weight:600;">Total Bayar</span>
+                    <span class="summary-total" id="sumTotal">-</span>
+                  </div>
+                </div>
+                <button id="payBtn" class="btn btn-primary btn-lg" style="margin-top: 1.5rem;" disabled>
+                  <span id="payBtnText">Bayar Sekarang</span>
+                  <span id="payBtnSpinner" class="spinner" style="display: none;"></span>
+                </button>
+                <p id="validationMsg" style="font-size: 0.75rem; color: var(--error); margin-top: 0.5rem; text-align: center; display: none;"></p>
+              </div>
+            </div>
+            <div class="info-card">
+              <p><strong style="color: var(--info);">ℹ️ Penting:</strong> Pastikan ID Free Fire sudah benar. Kesalahan ID bukan tanggung jawab kami.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <p>&copy; 2024 nazzstore. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module">
+    // ==========================================
+    // FIREBASE IMPORTS
+    // ==========================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      addDoc, 
+      getDoc, 
+      getDocs, 
+      updateDoc, 
+      setDoc,
+      Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ==========================================
+    // ⚠️ GANTI DENGAN CONFIG FIREBASE ANDA
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8WMVLi4chPIJYkZtubPC787pSI36UMQk",
+      authDomain: "nazzstorenieh.firebaseapp.com",
+      projectId: "nazzstorenieh",
+      storageBucket: "nazzstorenieh.firebasestorage.app",
+      messagingSenderId: "120598483627",
+      appId: "1:120598483627:web:83641541facb2aa2b91dee"
+    };
+
+    // ==========================================
+    // INITIALIZE
+    // ==========================================
+    let app, db;
+    let isFirebaseReady = false;
+
+    try {
+      app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      isFirebaseReady = true;
+      console.log('✅ Firebase initialized successfully');
+    } catch (error) {
+      console.error('❌ Firebase initialization error:', error);
+      toast('Gagal menghubungkan ke server', 'error');
+    }
+
+    // ==========================================
+    // STATE
+    // ==========================================
+    let products = [];
+    let payments = [];
+    let selectedProduct = null;
+    let selectedPayment = null;
+
+    // ==========================================
+    // UTILITY FUNCTIONS
+    // ==========================================
+    function formatCurrency(n) {
+      return new Intl.NumberFormat('id-ID', { 
+        style: 'currency', 
+        currency: 'IDR', 
+        minimumFractionDigits: 0 
+      }).format(n || 0);
+    }
+
+    function formatNumber(n) {
+      return new Intl.NumberFormat('id-ID').format(n || 0);
+    }
+
+    function generateOrderId() {
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      return `NZZ${timestamp}${random}`;
+    }
+
+    function toast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span>${msg}</span>`;
+      container.appendChild(t);
+      
+      requestAnimationFrame(() => {
+        t.classList.add('show');
+      });
+      
+      setTimeout(() => { 
+        t.classList.remove('show'); 
+        setTimeout(() => t.remove(), 300); 
+      }, 4000);
+    }
+
+    function debugLog(msg, data = null) {
+      console.log(`[DEBUG] ${msg}`, data || '');
+      
+      // Tampilkan di UI untuk debugging
+      const debugDiv = document.getElementById('debugInfo');
+      const debugContent = document.getElementById('debugContent');
+      if (debugDiv && debugContent) {
+        debugDiv.style.display = 'block';
+        debugContent.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg} ${data ? JSON.stringify(data) : ''}</div>`;
+      }
+    }
+
+    // ==========================================
+    // CHECK MAINTENANCE
+    // ==========================================
+    async function checkMaintenance() {
+      if (!isFirebaseReady) return false;
+      
+      try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'general'));
+        if (settingsDoc.exists() && settingsDoc.data().maintenanceMode === true) {
+          document.getElementById('mainContent').style.display = 'none';
+          document.getElementById('maintenancePage').style.display = 'flex';
+          return true;
+        }
+      } catch (e) {
+        console.log('Settings not found or error:', e.message);
+      }
+      return false;
+    }
+
+    // ==========================================
+    // LOAD PRODUCTS
+    // ==========================================
+    async function loadProducts() {
+      const container = document.getElementById('productsContainer');
+      
+      if (!isFirebaseReady) {
+        container.innerHTML = `
+          <div class="error-state">
+            <p>❌ Firebase tidak terhubung</p>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem;">Cek konfigurasi Firebase</p>
+          </div>
+        `;
+        return;
+      }
+      
+      try {
+        debugLog('Loading products...');
+        
+        const snapshot = await getDocs(collection(db, 'products'));
+        
+        debugLog(`Found ${snapshot.size} products`);
+        
+        products = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          debugLog(`Product: ${data.name}`, { active: data.active, price: data.price });
+          
+          // Include if active is true or not set
+          if (data.active !== false) {
+            products.push({ 
+              id: docSnap.id, 
+              name: data.name || 'Unnamed',
+              diamondAmount: data.diamondAmount || 0,
+              price: data.price || 0,
+              active: data.active
+            });
+          }
+        });
+
+        // Sort by price
+        products.sort((a, b) => a.price - b.price);
+
+        debugLog(`Active products: ${products.length}`);
+
+        if (products.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              <p style="margin-top: 1rem;">Belum ada produk tersedia</p>
+              <p style="font-size: 0.75rem; color: var(--gray-400);">Tambahkan produk di halaman admin</p>
+            </div>
+          `;
+          return;
+        }
+
+        renderProducts();
+
+      } catch (error) {
+        console.error('Error loading products:', error);
+        debugLog('Error loading products', error.message);
+        
+        container.innerHTML = `
+          <div class="error-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p style="margin-top: 1rem;">Gagal memuat produk</p>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem;">${error.message}</p>
+            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="location.reload()">Coba Lagi</button>
+          </div>
+        `;
+      }
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('productsContainer');
+      
+      container.innerHTML = `<div class="product-grid" id="productGrid"></div>`;
+      const grid = document.getElementById('productGrid');
+      
+      grid.innerHTML = products.map(p => `
+        <div class="product-card" data-id="${p.id}">
+          <div class="product-diamond">💎 ${formatNumber(p.diamondAmount)}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">${formatCurrency(p.price)}</div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const id = this.dataset.id;
+          selectProduct(id);
+        });
+      });
+    }
+
+    function selectProduct(id) {
+      selectedProduct = products.find(p => p.id === id);
+      debugLog('Selected product', selectedProduct);
+      
+      document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
+      const selectedCard = document.querySelector(`.product-card[data-id="${id}"]`);
+      if (selectedCard) {
+        selectedCard.classList.add('selected');
+      }
+      
+      updateSummary();
+    }
+
+    // ==========================================
+    // LOAD PAYMENTS
+    // ==========================================
+    async function loadPayments() {
+      const container = document.getElementById('paymentsContainer');
+      
+      if (!isFirebaseReady) {
+        container.innerHTML = `
+          <div class="error-state">
+            <p>❌ Firebase tidak terhubung</p>
+          </div>
+        `;
+        return;
+      }
+      
+      try {
+        debugLog('Loading payments...');
+        
+        const snapshot = await getDocs(collection(db, 'payments'));
+        
+        debugLog(`Found ${snapshot.size} payment methods`);
+        
+        payments = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.active !== false) {
+            payments.push({ 
+              id: docSnap.id, 
+              name: data.name || 'Unnamed',
+              number: data.number || '',
+              active: data.active
+            });
+          }
+        });
+
+        debugLog(`Active payments: ${payments.length}`);
+
+        if (payments.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+              <p style="margin-top: 1rem;">Belum ada metode pembayaran</p>
+              <p style="font-size: 0.75rem; color: var(--gray-400);">Tambahkan di halaman admin</p>
+            </div>
+          `;
+          return;
+        }
+
+        renderPayments();
+
+      } catch (error) {
+        console.error('Error loading payments:', error);
+        debugLog('Error loading payments', error.message);
+        
+        container.innerHTML = `
+          <div class="error-state">
+            <p>Gagal memuat metode pembayaran</p>
+            <p style="font-size: 0.75rem;">${error.message}</p>
+            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="location.reload()">Coba Lagi</button>
+          </div>
+        `;
+      }
+    }
+
+    function renderPayments() {
+      const container = document.getElementById('paymentsContainer');
+      
+      container.innerHTML = `<div class="payment-grid" id="paymentGrid"></div>`;
+      const grid = document.getElementById('paymentGrid');
+      
+      grid.innerHTML = payments.map(p => `
+        <div class="payment-card" data-id="${p.id}">
+          <div class="payment-radio"></div>
+          <div>
+            <div class="payment-name">${p.name}</div>
+            <div class="payment-number">${p.number}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.payment-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const id = this.dataset.id;
+          selectPayment(id);
+        });
+      });
+    }
+
+    function selectPayment(id) {
+      selectedPayment = payments.find(p => p.id === id);
+      debugLog('Selected payment', selectedPayment);
+      
+      document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
+      const selectedCard = document.querySelector(`.payment-card[data-id="${id}"]`);
+      if (selectedCard) {
+        selectedCard.classList.add('selected');
+      }
+      
+      updateSummary();
+    }
+
+    // ==========================================
+    // UPDATE SUMMARY
+    // ==========================================
+    function updateSummary() {
+      const emptyEl = document.getElementById('emptyOrder');
+      const summaryEl = document.getElementById('orderSummary');
+      
+      if (selectedProduct) {
+        emptyEl.style.display = 'none';
+        summaryEl.style.display = 'block';
+        
+        document.getElementById('sumProduct').textContent = selectedProduct.name;
+        document.getElementById('sumDiamond').textContent = formatNumber(selectedProduct.diamondAmount) + ' 💎';
+        document.getElementById('sumPayment').textContent = selectedPayment ? selectedPayment.name : '-';
+        document.getElementById('sumTotal').textContent = formatCurrency(selectedProduct.price);
+      } else {
+        emptyEl.style.display = 'block';
+        summaryEl.style.display = 'none';
+      }
+      
+      validateForm();
+    }
+
+    // ==========================================
+    // FORM VALIDATION
+    // ==========================================
+    function validateForm() {
+      const ffId = document.getElementById('ffId').value.trim();
+      const whatsapp = document.getElementById('whatsapp').value.trim();
+      const validationMsg = document.getElementById('validationMsg');
+      
+      let errors = [];
+      
+      if (!selectedProduct) {
+        errors.push('Pilih produk');
+      }
+      if (!selectedPayment) {
+        errors.push('Pilih metode pembayaran');
+      }
+      if (!ffId) {
+        errors.push('Masukkan ID Free Fire');
+      } else if (!/^[0-9]{8,10}$/.test(ffId)) {
+        errors.push('ID Free Fire harus 8-10 digit');
+      }
+      if (!whatsapp) {
+        errors.push('Masukkan nomor WhatsApp');
+      } else if (whatsapp.length < 10) {
+        errors.push('Nomor WhatsApp minimal 10 digit');
+      }
+      
+      const isValid = errors.length === 0;
+      
+      document.getElementById('payBtn').disabled = !isValid;
+      
+      if (errors.length > 0 && (ffId || whatsapp)) {
+        validationMsg.textContent = errors[0];
+        validationMsg.style.display = 'block';
+      } else {
+        validationMsg.style.display = 'none';
+      }
+      
+      return isValid;
+    }
+
+    // ==========================================
+    // INPUT EVENT HANDLERS
+    // ==========================================
+    document.getElementById('ffId').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+      validateForm();
+    });
+
+    document.getElementById('whatsapp').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+      validateForm();
+    });
+
+    // ==========================================
+    // CREATE ORDER
+    // ==========================================
+    document.getElementById('payBtn').addEventListener('click', async function() {
+      debugLog('Pay button clicked');
+      
+      if (!validateForm()) {
+        toast('Lengkapi semua data terlebih dahulu', 'error');
+        return;
+      }
+      
+      if (!isFirebaseReady) {
+        toast('Firebase tidak terhubung', 'error');
+        return;
+      }
+
+      const btn = this;
+      const btnText = document.getElementById('payBtnText');
+      const btnSpinner = document.getElementById('payBtnSpinner');
+      
+      const ffId = document.getElementById('ffId').value.trim();
+      const whatsapp = document.getElementById('whatsapp').value.trim();
+
+      // Disable button & show spinner
+      btn.disabled = true;
+      btnText.style.display = 'none';
+      btnSpinner.style.display = 'inline-block';
+
+      try {
+        const orderId = generateOrderId();
+        debugLog('Creating order with ID:', orderId);
+
+        // Prepare order data
+        const orderData = {
+          orderId: orderId,
+          productId: selectedProduct.id,
+          productName: selectedProduct.name,
+          diamondAmount: selectedProduct.diamondAmount,
+          price: selectedProduct.price,
+          ffId: ffId,
+          whatsapp: whatsapp,
+          paymentMethod: selectedPayment.name,
+          paymentNumber: selectedPayment.number,
+          proofImage: null,
+          status: 'PENDING',
+          createdAt: Timestamp.now()
+        };
+
+        debugLog('Order data:', orderData);
+
+        // Create order document
+        const docRef = await addDoc(collection(db, 'orders'), orderData);
+        
+        debugLog('Order created with doc ID:', docRef.id);
+
+        // Try to update stats (non-blocking)
+        try {
+          const statsRef = doc(db, 'stats', 'general');
+          const statsDoc = await getDoc(statsRef);
+          
+          if (statsDoc.exists()) {
+            const currentStats = statsDoc.data();
+            await updateDoc(statsRef, {
+              totalOrders: (currentStats.totalOrders || 0) + 1,
+              totalRevenue: (currentStats.totalRevenue || 0) + selectedProduct.price,
+              totalDiamonds: (currentStats.totalDiamonds || 0) + selectedProduct.diamondAmount
+            });
+            debugLog('Stats updated');
+          } else {
+            await setDoc(statsRef, {
+              totalOrders: 1,
+              totalRevenue: selectedProduct.price,
+              totalDiamonds: selectedProduct.diamondAmount,
+              totalCustomers: 1
+            });
+            debugLog('Stats created');
+          }
+        } catch (statsError) {
+          console.log('Stats update failed (non-critical):', statsError);
+          debugLog('Stats error (ignored)', statsError.message);
+        }
+
+        // Success!
+        toast('🎉 Pesanan berhasil dibuat!', 'success');
+        debugLog('Redirecting to order page...');
+        
+        // Redirect to order page
+        setTimeout(() => {
+          window.location.href = `order.html?id=${orderId}`;
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error creating order:', error);
+        debugLog('Error creating order', { 
+          message: error.message, 
+          code: error.code,
+          stack: error.stack 
+        });
+        
+        toast('❌ Gagal membuat pesanan: ' + error.message, 'error');
+        
+        // Re-enable button
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnSpinner.style.display = 'none';
+      }
+    });
+
+    // ==========================================
+    // INITIALIZE APP
+    // ==========================================
+    async function init() {
+      console.log('🚀 Initializing app...');
+      debugLog('App initializing...');
+      
+      // Check maintenance
+      const isMaintenance = await checkMaintenance();
+      if (isMaintenance) {
+        debugLog('Maintenance mode is ON');
+        return;
+      }
+      
+      // Load data
+      await Promise.all([
+        loadProducts(),
+        loadPayments()
+      ]);
+      
+      debugLog('Initialization complete');
+      console.log('✅ App initialized');
+    }
+
+    // Start app
+    init();
+
+    // Hide debug info after 30 seconds (optional)
+    // setTimeout(() => {
+    //   document.getElementById('debugInfo').style.display = 'none';
+    // }, 30000);
+  </script>
+</body>
+</html>
